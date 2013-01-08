@@ -39,9 +39,10 @@ def start():
 
     print "Found %d files for sending." % attached_files
     if attached_files > 0:
+        conn = SMTP()
         try:
             print "Connecting.."
-            conn = SMTP(settings.EMAIL_HOST)
+            conn.connect(settings.EMAIL_HOST)
             conn.set_debuglevel(False)
 
             if settings.EMAIL_USE_TLS:
