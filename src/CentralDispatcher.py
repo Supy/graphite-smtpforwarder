@@ -1,4 +1,4 @@
-import settings
+from warden_logging import log
 import smtplib
 import time
 from smtplib import SMTP
@@ -10,6 +10,7 @@ class CentralDispatcher(object):
     SLEEP_INTERVAL = 30
 
     def start(self):
+
         while True:
             for generator_cls in BaseMailGenerator.generator_registry:
                 generator = generator_cls()
@@ -18,29 +19,29 @@ class CentralDispatcher(object):
                 if mail:
                     conn = SMTP()
                     try:
-                        print "Connecting.."
+                        log.debug("Connecting..")
                         conn.connect(settings.EMAIL_HOST)
                         conn.set_debuglevel(False)
 
                         if settings.EMAIL_USE_TLS:
-                            print "Starting TLS.."
+                            log.debug("Starting TLS..")
                             conn.starttls()
 
-                        print "Logging in.."
+                        log.debug("Logging in..")
                         conn.login(settings.EMAIL_USERNAME, settings.EMAIL_PASSWORD)
-                        print "Sending mail.."
+                        log.debug("Sending mail..")
                         conn.sendmail(mail['From'], mail['To'], mail.as_string())
-                        print "Sent."
+                        log.debug("Sent.")
                     except smtplib.SMTPRecipientsRefused:
-                        print "Receipient confused."
+                        log.error("Receipient confused.")
                     except smtplib.SMTPHeloError:
-                        print "Server didn't respond properly to HELO."
+                        log.error("Server didn't respond properly to HELO.")
                     except smtplib.SMTPSenderRefused:
-                        print "Sender refused."
+                        log.error("Sender refused.")
                     except smtplib.SMTPDataError:
-                        print "Unexpected error code."
+                        log.error("Unexpected error code.")
                     except Exception as exc:
-                        print exc
+                        log.exception(exc)
                     finally:
                         if hasattr(conn, 'sock') and conn.sock:
                             conn.quit()

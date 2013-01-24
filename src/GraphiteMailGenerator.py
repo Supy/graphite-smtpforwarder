@@ -2,6 +2,7 @@ import settings
 import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from warden_logging import log
 
 import BaseMailGenerator
 
@@ -10,11 +11,11 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
     def create_mail(self):
         if not settings.EMAIL_TO or settings.EMAIL_TO == '':
-            print 'No receiver email address defined.'
+            log.error('No receiver email address defined.')
             return None
 
         if not os.path.isdir(settings.WHISPER_STORAGE_PATH):
-            print 'Invalid whisper storage path specified.'
+            log.error('Invalid whisper storage path specified.')
             return None
 
         mail = self._setup_mail()
@@ -31,13 +32,13 @@ class GraphiteMailGenerator(BaseMailGenerator.BaseMailGenerator):
 
     def _attach_files(self, mail):
         attached_files = 0
-        print "Scanning for files.."
+        log.debug("Scanning for files..")
         for path in self._walk_directory(settings.WHISPER_STORAGE_PATH):
             attachment = self.create_attachment(path, self._path_to_metric_filename(path))
             if attachment:
                 mail.attach(attachment)
                 attached_files += 1
-        print "Found %d files for sending." % attached_files
+        log.debug("Found %d files for sending." % attached_files)
         return attached_files
 
     def _walk_directory(self, path):

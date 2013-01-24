@@ -1,5 +1,6 @@
 from email.mime.base import MIMEBase
 from email import encoders
+from warden_logging import log
 
 generator_registry = []
 
@@ -23,8 +24,9 @@ class BaseMailGenerator(object):
             encoders.encode_base64(msg)
             msg.add_header('Content-Disposition', 'attachment', filename=name)
             return msg
-        except IOError:
-            print "Error reading contents of %s" % path
+        except IOError as e:
+            log.error("Error reading contents of %s: %s" % (path, e))
+
         finally:
             fp.close()
 
